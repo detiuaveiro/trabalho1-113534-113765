@@ -38,6 +38,8 @@ Sugere-se o desenvolvimento progressivo pela seguinte ordem:
 1. Completar `ImageCreate` e `ImageDestroy`.
 2. Compilar os programas correndo `make`
    e testar com
+Também pode ler sobre os princípios da [programação por contrato][dbc],
+que são seguidos neste projeto.
 
    ```bash
    valgrind ./imageTool test/original.pgm save out.pgm`
