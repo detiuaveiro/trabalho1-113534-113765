@@ -31,7 +31,18 @@ Execute:
 - `make clean` - Limpa ficheiros objeto e executáveis.
 
 
-## Sugestões para o desenvolvimento
+## Atualizar repositório
+
+Dado a natureza do trabalho poderá ser necessário actualizar o repositório actual a partir do base (upstream).
+Para isso basta seguir os seguintes comandos:
+
+```bash
+git remote add upstream git@github.com:detiuaveiro/image8bit-pub.git
+git fetch upstream
+git rebase upstream/master
+```
+
+## Recursos
 
 Sugere-se o desenvolvimento progressivo pela seguinte ordem:
 
