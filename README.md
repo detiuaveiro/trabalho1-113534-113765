@@ -9,21 +9,11 @@ Este é o código-fonte para o primeiro projeto de AED 2023-2024.
 - `instrumentation.[ch]` - módulo para contagens de operações e medição de tempos
 - `imageTest.c` - programa de teste simples
 - `imageTool.c` - programa de teste mais versátil
-- `Makefile` - regras para compilar e testar usando `make`
+- `Makefile`    - regras para compilar e testar usando `make`
+- `README.md`   - estas informações que está a ler
+- `TIPS.md`     - sugestões para os alunos
+- `Design-by-Contract.md` - explicação sobre metodologia DbC
 
-- `README.md` - estas informações que está a ler
-- `Design-by-Contract.md` - explicação sobre [metodologia DbC][dbc],
-   seguida neste projeto.
-
-
-[dbc]: Design-by-Contract.md
-
-## Descarregar imagens
-
-Execute:
-
-- `make pgm` - para descarregar imagens para pasta `pgm/`
-- `make setup` - para descarregar imagens para testes em `test/`
 
 ## Compilar
 
@@ -31,10 +21,13 @@ Execute:
 - `make clean` - Limpa ficheiros objeto e executáveis.
 
 
+
 ## Atualizar repositório
 
-Dado a natureza do trabalho poderá ser necessário actualizar o repositório actual a partir do base (upstream).
-Para isso basta seguir os seguintes comandos:
+
+Dada a natureza do trabalho, poderá ser necessário
+atualizar repositório base (upstream) deste projeto.
+Se isso acontecer, deverá atualizar o seu repositório com os seguintes comandos:
 
 ```bash
 git remote add upstream git@github.com:detiuaveiro/image8bit-pub.git
