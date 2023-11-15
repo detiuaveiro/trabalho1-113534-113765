@@ -618,7 +618,16 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
   assert (ImageValidPos(img1, x, y));
   // Insert your code here!
 
-  
+  for (int i = 0; i < img2->height; i++) {
+    for (int j = 0; j < img2->width; j++) {
+      uint8 pixel1 = ImageGetPixel(img1, x+j, y+i);
+      uint8 pixel2 = ImageGetPixel(img2, j, i);
+      if (pixel1 != pixel2) {
+        return 0;
+      }
+    }
+  } 
+  return 1;
 }
 
 /// Locate a subimage inside another image.
@@ -629,8 +638,19 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
   // Insert your code here!
+  for (int x = 0; x < img1->height; x++) {
+    for (int y = 0; y < img1->width; y++) {
+      if(ImageValidRect(img1, x, y, img2->width, img2->height)) {
+        if(ImageMatchSubImage(img1, x, y, img2)) {
+        *px = x;
+        *py = y;
+        return 1;
+        }
+      }
+    }
+  } 
+  return 0;
 }
-
 
 /// Filtering
 
@@ -640,5 +660,44 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 /// The image is changed in-place.
 void ImageBlur(Image img, int dx, int dy) { ///
   // Insert your code here!
+  for(int i = 0; i < img->height; i++) {
+    for(int j = 0; j < img->width; j++) { // x,y são as coordenadas do meio do retangulo
+      int x1 = i - dx;
+      int y1 = j -dy;
+
+      int x2 = i + dx;
+      int y2 = j + dx;
+
+      if (x1 < 0) {
+        x1 = 0;
+      }
+      if (y1 < 0) {
+        y1 = 0;
+      }
+      if(x2 > img->width) {
+        x2 = img->width;
+      }
+      if(y2 > img->height){
+        y2 = img->height;
+      }
+
+      int sum = 0;
+      for(int x = x1; x < x2; x++) {
+        for (int y = y1; y < y2; y++) {
+          sum+=ImageGetPixel(img, x, y);
+        }
+      }
+      uint8 blurredPixel = sum/((x2-x1)*(y2-y1));
+      uint8 blurredPixel_int = (uint8)blurredPixel;
+  
+      if (blurredPixel - blurredPixel_int >= 0.5) {
+        blurredPixel = blurredPixel_int + 1; 
+      }
+      else {
+        blurredPixel = blurredPixel_int;
+      }
+      ImageSetPixel(img, i, j, blurredPixel);
+    }
+  }
 }
 
