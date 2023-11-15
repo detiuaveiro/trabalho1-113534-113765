@@ -537,6 +537,20 @@ Image ImageCrop(Image img, int x, int y, int w, int h) { ///
   assert (img != NULL);
   assert (ImageValidRect(img, x, y, w, h));
   // Insert your code here!
+
+  uint8 starting_pixel = ImageGetPixel(img, x, y);
+  Image croppedImage = ImageCreate(w, h, img->maxval);
+
+  if (!croppedImage) {
+    return NULL;
+  }
+  for (int i = 0; i < h; i++) {       
+    for (int j = 0; j < w; j++) {   
+        uint8 pixel = ImageGetPixel(img, x + j, y + i);
+        ImageSetPixel(croppedImage, j, i, pixel);
+    }
+}
+  return croppedImage;
 }
 
 
@@ -551,6 +565,14 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
   assert (img2 != NULL);
   assert (ImageValidRect(img1, x, y, img2->width, img2->height));
   // Insert your code here!
+
+  for (int i = 0; i < img2->height; i++) {
+    for (int j = 0; j < img2->width; j++) {
+      uint8 pixel = ImageGetPixel(img2, j, i);
+      ImageSetPixel(img1, x + j, y + i, pixel);
+    }
+  }
+
 }
 
 /// Blend an image into a larger image.
