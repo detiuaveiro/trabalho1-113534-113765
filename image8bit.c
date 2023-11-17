@@ -691,7 +691,7 @@ void ImageBlur(Image img, int dx, int dy) {
         }
       }
       int count = (x2 - x1 + 1) * (y2 - y1 + 1);
-      double blurredPixel = sum/count;
+      double blurredPixel =(double)sum/count;
       uint8 blurredPixel_int = (uint8)blurredPixel;
   
       if (blurredPixel - blurredPixel_int >= 0.5) {
