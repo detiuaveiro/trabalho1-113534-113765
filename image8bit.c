@@ -658,7 +658,7 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 /// Each pixel is substituted by the mean of the pixels in the rectangle
 /// [x-dx, x+dx]x[y-dy, y+dy].
 /// The image is changed in-place.
-void ImageBlur(Image img, int dx, int dy) { ///
+void ImageBlur(Image img, int dx, int dy) { 
   // Insert your code here!
 
   Image tempImg = ImageCreate(img->width, img->height, img->maxval);
@@ -666,10 +666,10 @@ void ImageBlur(Image img, int dx, int dy) { ///
   for(int i = 0; i < img->height; i++) {
     for(int j = 0; j < img->width; j++) { // x,y são as coordenadas do meio do retangulo
       int x1 = i - dx;
-      int y1 = j -dy;
+      int y1 = j - dy;
 
       int x2 = i + dx;
-      int y2 = j + dx;
+      int y2 = j + dy;
 
       if (x1 < 0) {
         x1 = 0;
@@ -685,13 +685,12 @@ void ImageBlur(Image img, int dx, int dy) { ///
       }
 
       int sum = 0;
-      int count = 0;
       for(int x = x1; x <= x2; x++) {
         for (int y = y1; y <= y2; y++) {
           sum += ImageGetPixel(img, x, y);
-          count++;
         }
       }
+      int count = (x2 - x1 + 1) * (y2 - y1 + 1);
       double blurredPixel = sum/count;
       uint8 blurredPixel_int = (uint8)blurredPixel;
   
@@ -714,5 +713,5 @@ void ImageBlur(Image img, int dx, int dy) { ///
 
   // Free the temporary image memory
   ImageDestroy(&tempImg);
-}
+} 
 
