@@ -671,25 +671,20 @@ void ImageBlur(Image img, int dx, int dy) {
       int x2 = i + dx;
       int y2 = j + dy;
 
-      if (x1 < 0) {
-        x1 = 0;
-      }
-      if (y1 < 0) {
-        y1 = 0;
-      }
-      if(x2 >= img->width) {
-        x2 = img->width - 1;
-      }
-      if(y2 >= img->height){
-        y2 = img->height - 1;
-      }
+      if (x1 < 0) x1 = 0;
+      if (y1 < 0) y1 = 0;
+    
+      if(x2 >= img->width) x2 = img->width - 1;
+      if(y2 >= img->height) y2 = img->height - 1;
 
       int sum = 0;
+
       for(int x = x1; x <= x2; x++) {
         for (int y = y1; y <= y2; y++) {
           sum += ImageGetPixel(img, x, y);
         }
       }
+
       int count = (x2 - x1 + 1) * (y2 - y1 + 1);
       double blurredPixel =(double)sum/count;
       uint8 blurredPixel_int = (uint8)blurredPixel;
@@ -700,18 +695,17 @@ void ImageBlur(Image img, int dx, int dy) {
       else {
         blurredPixel = blurredPixel_int;
       }
+
       ImageSetPixel(tempImg, i, j, blurredPixel);
     }
   }
 
-   // Copy the blurred data back to the original image
   for(int i = 0; i < img->height; i++) {
     for(int j = 0; j < img->width; j++) {
       img->pixel[i * img->width + j] = tempImg->pixel[i * tempImg->width + j];
     }
   }
 
-  // Free the temporary image memory
   ImageDestroy(&tempImg);
 } 
 
