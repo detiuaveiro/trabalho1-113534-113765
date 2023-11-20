@@ -24,7 +24,11 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "instrumentation.h"
+
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
 
 // The data structure
 //
@@ -507,7 +511,6 @@ Image ImageMirror(Image img) { ///
   // Insert your code here!
 
   Image mirroredImage = ImageCreate(img->width, img->height, img->maxval);
-  int len = img->width*img->height;
 
   for(int i = 0; i < img->height; i++) {
     for(int j = 0; j<img->width/2; j++) {
@@ -538,7 +541,6 @@ Image ImageCrop(Image img, int x, int y, int w, int h) { ///
   assert (ImageValidRect(img, x, y, w, h));
   // Insert your code here!
 
-  uint8 starting_pixel = ImageGetPixel(img, x, y);
   Image croppedImage = ImageCreate(w, h, img->maxval);
 
   if (!croppedImage) {
@@ -658,54 +660,78 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 /// Each pixel is substituted by the mean of the pixels in the rectangle
 /// [x-dx, x+dx]x[y-dy, y+dy].
 /// The image is changed in-place.
+
+typedef uint32_t uint32;
+
+// calcular a Tabela de Área Somada (SAT) para uma imagem
+void ComputeSAT(Image img, uint32** sat) {
+    int width = img->width;
+    int height = img->height;
+
+    // aloocar memório para o SAT
+    *sat = (uint32*)malloc(width * height * sizeof(uint32));
+    if (*sat == NULL) {
+        fprintf(stderr, "Error allocating memory for SAT\n");
+        exit(1);
+    }
+
+    // calculo dos valores do SAT para cada pixel (i,j)
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            uint32 pixelValue = ImageGetPixel(img, i, j); // valor do pixel
+            uint32 left = (j > 0) ? (*sat)[i * width + (j - 1)] : 0; // valor da SAT do pixel à esquerda
+            uint32 top = (i > 0) ? (*sat)[(i - 1) * width + j] : 0;  // valor da SAT do pixel acima
+            uint32 topLeft = (i > 0 && j > 0) ? (*sat)[(i - 1) * width + (j - 1)] : 0; // valor da SAT do pixel na diagonal superior esquerda
+            (*sat)[i * width + j] = pixelValue + left + top - topLeft; // valor do pixel atual
+        }
+    }
+}
+
+// calcula a soma dos pixeis de uma área retangular específica usando a SAT
+uint32 ComputeSumUsingSAT(uint32* sat, int x1, int y1, int x2, int y2, int width) {
+  // A, B, C, D são os valores da SAT nos cantos do retângulo
+    uint32 A = (x1 > 0 && y1 > 0) ? sat[(x1 - 1) * width + (y1 - 1)] : 0; 
+    uint32 B = (y1 > 0) ? sat[x2 * width + (y1 - 1)] : 0;
+    uint32 C = (x1 > 0) ? sat[(x1 - 1) * width + y2] : 0;
+    uint32 D = sat[x2 * width + y2];
+    return D - B - C + A; // soma dos pixeis do retângulo
+}
+
 void ImageBlur(Image img, int dx, int dy) { 
   // Insert your code here!
+    uint32* sat;
+    ComputeSAT(img, &sat); // calculo a SAT da imagem (img)
 
-  Image tempImg = ImageCreate(img->width, img->height, img->maxval);
+    Image tempImg = ImageCreate(img->width, img->height, img->maxval);
 
-  for(int i = 0; i < img->height; i++) {
-    for(int j = 0; j < img->width; j++) { // x,y são as coordenadas do meio do retangulo
-      int x1 = i - dx;
-      int y1 = j - dy;
+    for (int i = 0; i < img->height; i++) {
+        for (int j = 0; j < img->width; j++) {
+          // definição do retângulo
+          int x1 = max(i - dx, 0);
+          int y1 = max(j - dy, 0);
+          int x2 = min(i + dx, img->width - 1);
+          int y2 = min(j + dy, img->height - 1);
 
-      int x2 = i + dx;
-      int y2 = j + dy;
+          uint32 sum = ComputeSumUsingSAT(sat, x1, y1, x2, y2, img->width); // calculo da soma dos valores dos pixels no retângulo
+          // calculo da média do valores do pixel e conversão para uint8
+          int count = (x2 - x1 + 1) * (y2 - y1 + 1);
+          double avg = (double)sum / count;
+          uint8 blurredPixel = (uint8)(avg + 0.5);
 
-      if (x1 < 0) x1 = 0;
-      if (y1 < 0) y1 = 0;
-    
-      if(x2 >= img->width) x2 = img->width - 1;
-      if(y2 >= img->height) y2 = img->height - 1;
-
-      int sum = 0;
-
-      for(int x = x1; x <= x2; x++) {
-        for (int y = y1; y <= y2; y++) {
-          sum += ImageGetPixel(img, x, y);
+          //pixel desfocado na imagem temporária
+          ImageSetPixel(tempImg, i, j, blurredPixel);
         }
-      }
-
-      int count = (x2 - x1 + 1) * (y2 - y1 + 1);
-      double blurredPixel =(double)sum/count;
-      uint8 blurredPixel_int = (uint8)blurredPixel;
-  
-      if (blurredPixel - blurredPixel_int >= 0.5) {
-        blurredPixel = blurredPixel_int + 1; 
-      }
-      else {
-        blurredPixel = blurredPixel_int;
-      }
-
-      ImageSetPixel(tempImg, i, j, blurredPixel);
     }
-  }
 
+  // substituir os pixeis da imagem original pelos pixeis da imagem temporária
   for(int i = 0; i < img->height; i++) {
     for(int j = 0; j < img->width; j++) {
       img->pixel[i * img->width + j] = tempImg->pixel[i * tempImg->width + j];
     }
   }
 
+  // libertar memória
+  free(sat);
   ImageDestroy(&tempImg);
 } 
 
