@@ -150,12 +150,14 @@ static int check(int condition, const char* failmsg) {
 void ImageInit(void) { ///
   InstrCalibrate();
   InstrName[0] = "pixmem";  // InstrCount[0] will count pixel array acesses
+  InstrName[1] = "its";  // InstrCount[0] will count pixel array acesses
   // Name other counters here...
   
 }
 
 // Macros to simplify accessing instrumentation counters:
 #define PIXMEM InstrCount[0]
+#define ITS InstrCount[1]
 // Add more macros here...
 
 // TIP: Search for PIXMEM or InstrCount to see where it is incremented!
@@ -363,6 +365,8 @@ int ImageValidRect(Image img, int x, int y, int w, int h) { ///
 // The returned index must satisfy (0 <= index < img->width*img->height)
 static inline int G(Image img, int x, int y) {
   int index;
+  assert(img != NULL);
+  assert(ImageValidPos(img, x, y));
   // Insert your code here!
 
   index = x + img->width*y;
@@ -678,7 +682,7 @@ void ComputeSAT(Image img, uint32** sat) {
     // calculo dos valores do SAT para cada pixel (i,j)
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            uint32 pixelValue = ImageGetPixel(img, i, j); // valor do pixel
+            uint32 pixelValue = ImageGetPixel(img, j, i); // valor do pixel
             uint32 left = (j > 0) ? (*sat)[i * width + (j - 1)] : 0; // valor da SAT do pixel à esquerda
             uint32 top = (i > 0) ? (*sat)[(i - 1) * width + j] : 0;  // valor da SAT do pixel acima
             uint32 topLeft = (i > 0 && j > 0) ? (*sat)[(i - 1) * width + (j - 1)] : 0; // valor da SAT do pixel na diagonal superior esquerda
@@ -690,10 +694,10 @@ void ComputeSAT(Image img, uint32** sat) {
 // calcula a soma dos pixeis de uma área retangular específica usando a SAT
 uint32 ComputeSumUsingSAT(uint32* sat, int x1, int y1, int x2, int y2, int width) {
   // A, B, C, D são os valores da SAT nos cantos do retângulo
-    uint32 A = (x1 > 0 && y1 > 0) ? sat[(x1 - 1) * width + (y1 - 1)] : 0; 
-    uint32 B = (y1 > 0) ? sat[x2 * width + (y1 - 1)] : 0;
-    uint32 C = (x1 > 0) ? sat[(x1 - 1) * width + y2] : 0;
-    uint32 D = sat[x2 * width + y2];
+    uint32 A = (x1 > 0 && y1 > 0) ? sat[(y1 - 1) * width + (x1 - 1)] : 0; 
+    uint32 B = (y1 > 0) ? sat[(y1 - 1) * width + (x2)] : 0;
+    uint32 C = (x1 > 0) ? sat[(y2) * width + (x1-1)] : 0;
+    uint32 D = sat[y2 * width + x2];
     return D - B - C + A; // soma dos pixeis do retângulo
 }
 
@@ -707,10 +711,11 @@ void ImageBlur(Image img, int dx, int dy) {
     for (int i = 0; i < img->height; i++) {
         for (int j = 0; j < img->width; j++) {
           // definição do retângulo
-          int x1 = max(i - dx, 0);
-          int y1 = max(j - dy, 0);
-          int x2 = min(i + dx, img->width - 1);
-          int y2 = min(j + dy, img->height - 1);
+          ITS++;
+          int x1 = max(j - dx, 0);
+          int y1 = max(i - dy, 0);
+          int x2 = min(j + dx, img->width - 1);
+          int y2 = min(i + dy, img->height - 1);
 
           uint32 sum = ComputeSumUsingSAT(sat, x1, y1, x2, y2, img->width); // calculo da soma dos valores dos pixels no retângulo
           // calculo da média do valores do pixel e conversão para uint8
@@ -719,7 +724,7 @@ void ImageBlur(Image img, int dx, int dy) {
           uint8 blurredPixel = (uint8)(avg + 0.5);
 
           //pixel desfocado na imagem temporária
-          ImageSetPixel(tempImg, i, j, blurredPixel);
+          ImageSetPixel(tempImg, j, i, blurredPixel);
         }
     }
 
@@ -727,6 +732,7 @@ void ImageBlur(Image img, int dx, int dy) {
   for(int i = 0; i < img->height; i++) {
     for(int j = 0; j < img->width; j++) {
       img->pixel[i * img->width + j] = tempImg->pixel[i * tempImg->width + j];
+      ITS++;
     }
   }
 
