@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 
   ImageInit();
   
-  printf("# LOAD image");
+  printf("# LOAD image\n");
   InstrReset(); // to reset instrumentation
   Image img1 = ImageLoad(argv[1]);
   if (img1 == NULL) {
@@ -36,9 +36,14 @@ int main(int argc, char* argv[]) {
   // Try changing the behaviour of the program by commenting/uncommenting
   // the appropriate lines.
 
-  //img2 = ImageCrop(img1, ImageWidth(img1)/4, ImageHeight(img1)/4, ImageWidth(img1)/2, ImageHeight(img1)/2);
-  ImageBlur(img1, 20, 20);
-  
+  //Image img2 = ImageCrop(img1, ImageWidth(img1)/4, ImageHeight(img1)/4, ImageWidth(img1)/2, ImageHeight(img1)/2);
+  //ImageBlend(img1, 20, 20, img2,0.5);
+  ImageRotate(img1);
+  //ImageThreshold(img1, 20);
+  //ImageBlur(img1, 20, 20);
+  if (ImageSave(img1, argv[2]) == 0) {
+    error(2, errno, "%s: %s", argv[2], ImageErrMsg());
+  }
   InstrPrint(); // to print instrumentation
 
   ImageDestroy(&img1);
