@@ -32,14 +32,23 @@ int main(int argc, char* argv[]) {
   if (img1 == NULL) {
     error(2, errno, "Loading %s: %s", argv[1], ImageErrMsg());
   }
+  /* Image img2 = ImageLoad(argv[2]);
+  if (img2 == NULL) {
+    error(2, errno, "Loading %s: %s", argv[2], ImageErrMsg());
+  }*/
+ 
 
   // Try changing the behaviour of the program by commenting/uncommenting
   // the appropriate lines.
 
   //Image img2 = ImageCrop(img1, ImageWidth(img1)/4, ImageHeight(img1)/4, ImageWidth(img1)/2, ImageHeight(img1)/2);
-  //ImageBlend(img1, 20, 20, img2,0.5);
-  ImageRotate(img1);
+  //ImageBlend(img1, 300, 300, img2, -0.4);
+  //ImageRotate(img1);
+  //ImageNegative(img1);
   //ImageThreshold(img1, 20);
+  ImageBrighten(img1, 1.1);
+  //ImageMirror(img1);
+  //ImagePaste(img1,200,200,img2);
   //ImageBlur(img1, 20, 20);
   if (ImageSave(img1, argv[2]) == 0) {
     error(2, errno, "%s: %s", argv[2], ImageErrMsg());

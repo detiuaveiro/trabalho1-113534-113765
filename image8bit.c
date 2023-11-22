@@ -447,18 +447,23 @@ void ImageBrighten(Image img, double factor) { ///
 
   for (int i = 0; i<len; i++){
     double newLevel = img->pixel[i] * factor;
-    int newLevel_int = (uint8)newLevel;
-
-    if (newLevel - newLevel_int < 0.5) {
-      img->pixel[i] = newLevel_int;
+    if (newLevel > img->maxval){
+      newLevel = img->maxval;
     }
     else {
-      img->pixel[i] = newLevel_int + 1;
-    }
+      int newLevel_int = (uint8)newLevel;
 
-    if (img->pixel[i] > img->maxval){
-      img->pixel[i] = img->maxval;
-    }
+      if (newLevel - newLevel_int < 0.5) {
+        img->pixel[i] = newLevel_int;
+      }
+      else {
+        img->pixel[i] = newLevel_int + 1;
+      }
+
+      if (img->pixel[i] > img->maxval){
+        img->pixel[i] = img->maxval;
+      }
+    } 
   }
 }
 
@@ -484,11 +489,14 @@ void ImageBrighten(Image img, double factor) { ///
 /// On success, a new image is returned.
 /// (The caller is responsible for destroying the returned image!)
 /// On failure, returns NULL and errno/errCause are set accordingly.
-Image ImageRotate(Image img) { ///
+Image ImageRotate(Image img) { 
   assert (img != NULL);
   // Insert your code here!
 
-  Image rotatedImage = ImageCreate(img->width, img->height, img->maxval);
+  Image rotatedImage = ImageCreate(img->height, img->width, img->maxval);
+  if (rotatedImage == NULL) {
+    return NULL;
+  }
 
   for(int i = 0; i < img->width; i++) {
     for(int j = 0; j<img->height; j++) {
@@ -515,6 +523,9 @@ Image ImageMirror(Image img) { ///
   // Insert your code here!
 
   Image mirroredImage = ImageCreate(img->width, img->height, img->maxval);
+  if (mirroredImage == NULL) {
+    return NULL;
+  }
 
   for(int i = 0; i < img->height; i++) {
     for(int j = 0; j<img->width/2; j++) {
@@ -546,10 +557,10 @@ Image ImageCrop(Image img, int x, int y, int w, int h) { ///
   // Insert your code here!
 
   Image croppedImage = ImageCreate(w, h, img->maxval);
-
   if (!croppedImage) {
     return NULL;
   }
+
   for (int i = 0; i < h; i++) {       
     for (int j = 0; j < w; j++) {   
         uint8 pixel = ImageGetPixel(img, x + j, y + i);
@@ -696,7 +707,7 @@ uint32 ComputeSumUsingSAT(uint32* sat, int x1, int y1, int x2, int y2, int width
   // A, B, C, D são os valores da SAT nos cantos do retângulo
     uint32 A = (x1 > 0 && y1 > 0) ? sat[(y1 - 1) * width + (x1 - 1)] : 0; 
     uint32 B = (y1 > 0) ? sat[(y1 - 1) * width + (x2)] : 0;
-    uint32 C = (x1 > 0) ? sat[(y2) * width + (x1-1)] : 0;
+    uint32 C = (x1 > 0) ? sat[(y2 - 1) * width + x1] : 0;
     uint32 D = sat[y2 * width + x2];
     return D - B - C + A; // soma dos pixeis do retângulo
 }
