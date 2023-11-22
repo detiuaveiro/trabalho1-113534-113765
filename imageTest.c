@@ -46,10 +46,10 @@ int main(int argc, char* argv[]) {
   //ImageRotate(img1);
   //ImageNegative(img1);
   //ImageThreshold(img1, 20);
-  ImageBrighten(img1, 1.1);
+  //ImageBrighten(img1, 1.1);
   //ImageMirror(img1);
   //ImagePaste(img1,200,200,img2);
-  //ImageBlur(img1, 20, 20);
+  ImageBlur(img1, 20, 20);
   if (ImageSave(img1, argv[2]) == 0) {
     error(2, errno, "%s: %s", argv[2], ImageErrMsg());
   }

@@ -114,7 +114,10 @@ void InstrPrint(void) { ///
   double time = cpu_time() - InstrTime;
   // compute time in calibrated time units:
   double caltime = time / InstrCTU;
-
+  FILE* f1 = fopen("contador.txt", "a");
+  FILE* f2 = fopen("tempo.txt", "a");
+  fprintf(f1, "%lu\n", InstrCount[0]);
+  fprintf(f2, "%f\n", time);
   printf("#%14.15s\t%15.15s", "time", "caltime");
   for (int i = 0; i < NUMCOUNTERS; i++)
     if (InstrName[i] != NULL)
