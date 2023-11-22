@@ -707,7 +707,7 @@ uint32 ComputeSumUsingSAT(uint32* sat, int x1, int y1, int x2, int y2, int width
   // A, B, C, D são os valores da SAT nos cantos do retângulo
     uint32 A = (x1 > 0 && y1 > 0) ? sat[(y1 - 1) * width + (x1 - 1)] : 0; 
     uint32 B = (y1 > 0) ? sat[(y1 - 1) * width + (x2)] : 0;
-    uint32 C = (x1 > 0) ? sat[(y2 - 1) * width + x1] : 0;
+    uint32 C = (x1 > 0) ? sat[y2 * width + (x1-1)] : 0;
     uint32 D = sat[y2 * width + x2];
     return D - B - C + A; // soma dos pixeis do retângulo
 }
