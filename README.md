@@ -59,7 +59,7 @@ Sugere-se o desenvolvimento progressivo pela seguinte ordem:
 10. Completar `ImageBlur`.
 
 Pode executar `make test1`, `make test2`, etc.
-para fazer testes simples a muitas destas funções.
+para fazer testes simples a muitas destas funções.g
 Mas faça outros testes que considere adequados.
 
 ## Atualizar repositório
