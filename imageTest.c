@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 
   ImageDestroy(&img1);
   //img2 = ImageCrop(img1, ImageWidth(img1)/4, ImageHeight(img1)/4, ImageWidth(img1)/2, ImageHeight(img1)/2);
-  Image img2 = ImageRotate(img1);
+  //Image img2 = ImageRotate(img1);
   if (img2 == NULL) {
     error(2, errno, "Rotating img2: %s", ImageErrMsg());
   }
