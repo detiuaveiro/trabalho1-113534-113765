@@ -27,8 +27,8 @@
 #include <stdint.h>
 #include "instrumentation.h"
 
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define min(a, b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b)) // macro para o máximo de dois valores
+#define min(a, b) ((a) < (b) ? (a) : (b)) // macro para o mínimo de dois valores
 
 // The data structure
 //
@@ -91,7 +91,7 @@ static char* errCause;
 ///
 /// After a successful operation, the result is not garanteed (it might be
 /// the previous error cause).  It is not meant to be used in that situation!
-char* ImageErrMsg() { ///
+char* ImageErrMsg() { 
   return errCause;
 }
 
@@ -150,7 +150,7 @@ static int check(int condition, const char* failmsg) {
 void ImageInit(void) { ///
   InstrCalibrate();
   InstrName[0] = "pixmem";  // InstrCount[0] will count pixel array acesses
-  InstrName[1] = "its";  // InstrCount[0] will count pixel array acesses
+  InstrName[1] = "its";  // InstrCount[1] will count iterations
   // Name other counters here...
   
 }
@@ -209,9 +209,9 @@ void ImageDestroy(Image* imgp) { ///
   // Insert your code here!
 
   if (*imgp){
-    free((*imgp)->pixel);                                                 // libertar o espaço alocado para pixel data
-    free(*imgp);                                                          // libertar o espaço alocado para estrutura da imagem
-    *imgp = NULL;                                                         // igualar o pointer a zero 
+    free((*imgp)->pixel);               // libertar o espaço alocado para pixel data
+    free(*imgp);                        // libertar o espaço alocado para estrutura da imagem
+    *imgp = NULL;                       // igualar o pointer a zero 
   }
 }
 
@@ -331,10 +331,10 @@ void ImageStats(Image img, uint8* min, uint8* max) { ///
   int len = img->width*img->height;
   for (int i = 0; i<len; i++){
     if (img->pixel[i] < *min){
-      *min = img->pixel[i];
+      *min = img->pixel[i];  // atualização do minimo
     }
     if (img->pixel[i] > *max){
-      *max = img->pixel[i];
+      *max = img->pixel[i]; // atualização do maximo
     }
   }
 }
@@ -350,7 +350,7 @@ int ImageValidRect(Image img, int x, int y, int w, int h) { ///
   assert (img != NULL);
   // Insert your code here!
 
-  return (ImageValidPos(img,x,y) && ImageValidPos(img,x+w,y+h));
+  return (ImageValidPos(img,x,y) && ImageValidPos(img,x+w,y+h)); 
 }
 
 /// Pixel get & set operations
@@ -369,9 +369,9 @@ static inline int G(Image img, int x, int y) {
   assert(ImageValidPos(img, x, y));
   // Insert your code here!
 
-  index = x + img->width*y;
+  index = x + img->width*y; // linearização da matriz bidimensional
 
-  assert (0 <= index && index < img->width*img->height);
+  assert (0 <= index && index < img->width*img->height); 
   return index;
 }
 
@@ -407,10 +407,10 @@ void ImageNegative(Image img) { ///
   assert (img != NULL);
   // Insert your code here!
 
-  int len = img->width*img->height;
+  int len = img->width*img->height; // número de pixeis na imagem
 
   for (int i = 0; i<len; i++){
-    img->pixel[i] = img->maxval - img->pixel[i];
+    img->pixel[i] = img->maxval - img->pixel[i]; // transformação do pixel
   }
 
 }
@@ -422,14 +422,14 @@ void ImageThreshold(Image img, uint8 thr) { ///
   assert (img != NULL);
   // Insert your code here!
 
-  int len = img->width*img->height;
+  int len = img->width*img->height; // número de pixeis na imagem
 
   for (int i = 0; i<len; i++){
-    if (img->pixel[i]<thr){
-      img->pixel[i] = 0;
+    if (img->pixel[i]<thr){ 
+      img->pixel[i] = 0; // transformação do pixel caso o pixel seja menor que o threshold
     }
     else{
-      img->pixel[i] = img->maxval;
+      img->pixel[i] = img->maxval; // transformação do pixel caso o pixel seja maior ou igual ao threshold
     }
   }
 }
@@ -443,24 +443,25 @@ void ImageBrighten(Image img, double factor) { ///
   assert (factor >= 0.0);
   // Insert your code here!
 
-  int len = img->width*img->height;
+  int len = img->width*img->height; // número de pixeis na imagem
 
-  for (int i = 0; i<len; i++){
-    double newLevel = img->pixel[i] * factor;
+  for (int i = 0; i  < len; i++){
+    double newLevel = img->pixel[i] * factor; // cálculo do novo nivel do pixel
     if (newLevel > img->maxval){
-      newLevel = img->maxval;
+      newLevel = img->maxval; // saturação do pixel, caso o novo nivel seja maior que o maxval
     }
     else {
-      int newLevel_int = (uint8)newLevel;
+      // arredondamento do novo nivel do pixel
+      int newLevel_int = (uint8)newLevel; // conversão do novo nivel para inteiro
 
-      if (newLevel - newLevel_int < 0.5) {
-        img->pixel[i] = newLevel_int;
+      if (newLevel - newLevel_int < 0.5) { // arredondamento para baixo
+        img->pixel[i] = newLevel_int; 
       }
       else {
-        img->pixel[i] = newLevel_int + 1;
+        img->pixel[i] = newLevel_int + 1; // arredondamento para cima
       }
 
-      if (img->pixel[i] > img->maxval){
+      if (img->pixel[i] > img->maxval){ // saturação do pixel, caso o novo nivel seja maior que o maxval
         img->pixel[i] = img->maxval;
       }
     } 
@@ -493,19 +494,20 @@ Image ImageRotate(Image img) {
   assert (img != NULL);
   // Insert your code here!
 
-  Image rotatedImage = ImageCreate(img->height, img->width, img->maxval);
+  Image rotatedImage = ImageCreate(img->height, img->width, img->maxval); // criação de uma nova imagem com as dimensões trocadas
   if (rotatedImage == NULL) {
+    errCause = "Memory allocation for rotated image failed"; // erro, caso a alocação falhe
     return NULL;
   }
 
   for(int i = 0; i < img->width; i++) {
     for(int j = 0; j<img->height; j++) {
-      int newX = j;
-      int newY = img->width - i - 1;
+      int newX = j; // troca das coordenadas
+      int newY = img->width - i - 1; // troca das coordenadas
 
-      uint8 pixel = ImageGetPixel(img, i, j);
+      uint8 pixel = ImageGetPixel(img, i, j); // pixel da imagem original
 
-      ImageSetPixel(rotatedImage, newX, newY, pixel);
+      ImageSetPixel(rotatedImage, newX, newY, pixel); // pixel da imagem rodada
     }
   }
   return rotatedImage;
@@ -522,17 +524,18 @@ Image ImageMirror(Image img) { ///
   assert (img != NULL);
   // Insert your code here!
 
-  Image mirroredImage = ImageCreate(img->width, img->height, img->maxval);
+  Image mirroredImage = ImageCreate(img->width, img->height, img->maxval); // criação de uma nova imagem
   if (mirroredImage == NULL) {
+    errCause = "Memory allocation for mirrored image failed"; // erro, caso a alocação falhe
     return NULL;
   }
 
   for(int i = 0; i < img->height; i++) {
     for(int j = 0; j<img->width/2; j++) {
-      uint8 temp = ImageGetPixel(img, j, i );
-      ImageSetPixel(mirroredImage, j, i, ImageGetPixel(img, img->width - j - 1, i));
+      uint8 temp = ImageGetPixel(img, j, i ); // pixel temporário
+      ImageSetPixel(mirroredImage, j, i, ImageGetPixel(img, img->width - j - 1, i)); // pixel da imagem espelhada
       
-      ImageSetPixel(mirroredImage, mirroredImage->width - j - 1, i, temp);
+      ImageSetPixel(mirroredImage, mirroredImage->width - j - 1, i, temp); // pixel da imagem espelhada
     }
   }
 
@@ -556,18 +559,19 @@ Image ImageCrop(Image img, int x, int y, int w, int h) { ///
   assert (ImageValidRect(img, x, y, w, h));
   // Insert your code here!
 
-  Image croppedImage = ImageCreate(w, h, img->maxval);
+  Image croppedImage = ImageCreate(w, h, img->maxval); // criação de uma nova imagem
   if (!croppedImage) {
+    errCause = "Memory allocation for cropped image failed"; // erro, caso a alocação falhe
     return NULL;
   }
 
   for (int i = 0; i < h; i++) {       
     for (int j = 0; j < w; j++) {   
-        uint8 pixel = ImageGetPixel(img, x + j, y + i);
-        ImageSetPixel(croppedImage, j, i, pixel);
+        uint8 pixel = ImageGetPixel(img, x + j, y + i); // pixel da imagem original
+        ImageSetPixel(croppedImage, j, i, pixel); // pixel da imagem cortada
     }
 }
-  return croppedImage;
+  return croppedImage; 
 }
 
 
@@ -585,8 +589,8 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
 
   for (int i = 0; i < img2->height; i++) {
     for (int j = 0; j < img2->width; j++) {
-      uint8 pixel = ImageGetPixel(img2, j, i);
-      ImageSetPixel(img1, x + j, y + i, pixel);
+      uint8 pixel = ImageGetPixel(img2, j, i); // pixel da img a colar (img2)
+      ImageSetPixel(img1, x + j, y + i, pixel); // pixel da img a colar, set na img1
     }
   }
 
@@ -606,10 +610,12 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
 
   for (int i = 0; i < img2->height; i++) {
     for (int j = 0; j < img2->width; j++) {
-      uint8 pixel2 = ImageGetPixel(img2, j, i);
-      uint8 pixel1 = ImageGetPixel(img1, x+j, y+i);
+      uint8 pixel2 = ImageGetPixel(img2, j, i); // pixel da img2
+      uint8 pixel1 = ImageGetPixel(img1, x+j, y+i); // pixel da img1
 
-      double newPixel = pixel1*(1-alpha) + pixel2 * alpha;
+      double newPixel = pixel1*(1-alpha) + pixel2 * alpha; // cálculo do novo pixel(blend)
+
+      // arredondamento do newPixel
       uint8 newPixel_int = (uint8)newPixel;
   
       if (newPixel - newPixel_int >= 0.5) {
@@ -618,6 +624,8 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
       else {
         newPixel = newPixel_int;
       }
+
+      // saturação do newPixel
       if (newPixel > PixMax){
         newPixel = PixMax;
       }
@@ -637,9 +645,10 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
 
   for (int i = 0; i < img2->height; i++) {
     for (int j = 0; j < img2->width; j++) {
-      uint8 pixel1 = ImageGetPixel(img1, x+j, y+i);
-      uint8 pixel2 = ImageGetPixel(img2, j, i);
-      if (pixel1 != pixel2) {
+      ITS++; // incremento do contador de iterações
+      uint8 pixel1 = ImageGetPixel(img1, x+j, y+i); // pixel da img1
+      uint8 pixel2 = ImageGetPixel(img2, j, i); // pixel da img2
+      if (pixel1 != pixel2) { // comparação dos pixeis
         return 0;
       }
     }
@@ -657,10 +666,11 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
   // Insert your code here!
   for (int x = 0; x < img1->height; x++) {
     for (int y = 0; y < img1->width; y++) {
-      if(ImageValidRect(img1, x, y, img2->width, img2->height)) {
-        if(ImageMatchSubImage(img1, x, y, img2)) {
-        *px = x;
-        *py = y;
+      ITS++; // incremento do contador de iterações
+      if(ImageValidRect(img1, x, y, img2->width, img2->height)) { // verificação se a imagem cabe dentro da imagem original
+        if(ImageMatchSubImage(img1, x, y, img2)) { // verificação se a imagem é igual à imagem original
+        *px = x; // o pntr px aponta para x
+        *py = y; // o pntr py aponta para y
         return 1;
         }
       }
@@ -683,8 +693,8 @@ void ComputeSAT(Image img, uint32** sat) {
     int width = img->width;
     int height = img->height;
 
-    // aloocar memório para o SAT
-    *sat = (uint32*)malloc(width * height * sizeof(uint32));
+    // alocar memório para o SAT
+    *sat = (uint32*)malloc(width * height * sizeof(uint32)); 
     if (*sat == NULL) {
         fprintf(stderr, "Error allocating memory for SAT\n");
         exit(1);
@@ -717,21 +727,26 @@ void ImageBlur(Image img, int dx, int dy) {
     uint32* sat;
     ComputeSAT(img, &sat); // calculo a SAT da imagem (img)
 
-    Image tempImg = ImageCreate(img->width, img->height, img->maxval);
+    Image tempImg = ImageCreate(img->width, img->height, img->maxval); // criação de uma temp image
+    if (tempImg == NULL) {
+        errCause = "Memory allocation for temporary image failed"; // erro, caso a alocação falhe
+        return;
+    }
 
     for (int i = 0; i < img->height; i++) {
         for (int j = 0; j < img->width; j++) {
           // definição do retângulo
-          ITS++;
-          int x1 = max(j - dx, 0);
-          int y1 = max(i - dy, 0);
-          int x2 = min(j + dx, img->width - 1);
-          int y2 = min(i + dy, img->height - 1);
+          ITS++; // incremento do contador de iterações
+          int x1 = max(j - dx, 0); // coordenada x do canto superior esquerdo do retângulo
+          int y1 = max(i - dy, 0); // coordenada y do canto superior esquerdo do retângulo
+          int x2 = min(j + dx, img->width - 1); // coordenada x do canto inferior direito do retângulo
+          int y2 = min(i + dy, img->height - 1); // coordenada y do canto inferior direito do retângulo
 
           uint32 sum = ComputeSumUsingSAT(sat, x1, y1, x2, y2, img->width); // calculo da soma dos valores dos pixels no retângulo
-          // calculo da média do valores do pixel e conversão para uint8
+          // calculo da média do valores do pixel 
           int count = (x2 - x1 + 1) * (y2 - y1 + 1);
           double avg = (double)sum / count;
+          // conversão para uint8
           uint8 blurredPixel = (uint8)(avg + 0.5);
 
           //pixel desfocado na imagem temporária
@@ -742,8 +757,8 @@ void ImageBlur(Image img, int dx, int dy) {
   // substituir os pixeis da imagem original pelos pixeis da imagem temporária
   for(int i = 0; i < img->height; i++) {
     for(int j = 0; j < img->width; j++) {
-      img->pixel[i * img->width + j] = tempImg->pixel[i * tempImg->width + j];
-      ITS++;
+      ITS++; // incremento do contador de iterações
+      img->pixel[i * img->width + j] = tempImg->pixel[i * tempImg->width + j]; // pixel da imagem original
     }
   }
 

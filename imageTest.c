@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
   // Try changing the behaviour of the program by commenting/uncommenting
   // the appropriate lines.
 
-  //Image img2 = ImageCrop(img1, ImageWidth(img1)/4, ImageHeight(img1)/4, ImageWidth(img1)/2, ImageHeight(img1)/2);
+  Image img2 = ImageCrop(img1, ImageWidth(img1) - ImageWidth(img1)/5 - 1, ImageHeight(img1) - ImageHeight(img1)/5 - 1, ImageWidth(img1)/5, ImageHeight(img1)/5);
   //ImageBlend(img1, 300, 300, img2, -0.4);
   //ImageRotate(img1);
   //ImageNegative(img1);
@@ -49,7 +49,10 @@ int main(int argc, char* argv[]) {
   //ImageBrighten(img1, 1.1);
   //ImageMirror(img1);
   //ImagePaste(img1,200,200,img2);
-  ImageBlur(img1, 20, 20);
+  // ImageBlur(img1, 20, 20);
+  int px;
+  int py;
+  ImageLocateSubImage(img1, &px, &py, img2);
   if (ImageSave(img1, argv[2]) == 0) {
     error(2, errno, "%s: %s", argv[2], ImageErrMsg());
   }
